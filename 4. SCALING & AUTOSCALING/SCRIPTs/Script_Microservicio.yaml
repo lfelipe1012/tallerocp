@@ -1,0 +1,72 @@
+#### -------- [NAMESPACE] -------- ####
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dummy-csm-crga
+ 
+---    
+    
+#### -------- [DEPLOYMENT] -------- ####
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dummy-micro-deploy
+  namespace: dummy-csm-crga
+  labels:
+    app: dummy-micro-service
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dummy-micro-service
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: dummy-micro-service
+        version: v1
+    spec:
+      containers:
+      - image: maktup/dummy-micro-01:latest
+        name: dummy-micro-container
+        resources:
+          limits:
+            cpu: 250m
+            memory: 250Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        ports:
+        - containerPort: 8080 
+---    
+     
+#### -------- [SERVICE] -------- #### 
+apiVersion: v1
+kind: Service
+metadata:
+  name: dummy-micro-service
+  namespace: dummy-csm-crga
+  labels:
+    app: dummy-micro-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: dummy-micro-service
+ 
+---    
+     
+#### -------- [ROUTE] -------- #### 
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: dummy-micro-route
+  namespace: dummy-csm-crga 
+spec:
+  to:
+    kind: Service
+    name: dummy-micro-service
